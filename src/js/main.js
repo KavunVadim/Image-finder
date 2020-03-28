@@ -7,7 +7,7 @@ import templatBtn from '../templates/templat-btn.hbs';
 
 const apiService = new ApiService();
 
-class SearchImages {
+class SearchImagesPlugin {
     constructor() {
         this.container = document.querySelector('body');
         this.searchForm = null;
@@ -87,4 +87,4 @@ class SearchImages {
     };
 }
 
-new SearchImages().start('search-form', 'search-input', 'gallery');
+new SearchImagesPlugin().start('search-form', 'search-input', 'gallery');
