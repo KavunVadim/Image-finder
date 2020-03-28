@@ -35,13 +35,14 @@ class SearchImagesPlugin {
 
     galleryRequest = async e => {
         e.preventDefault();
+        if (this.searchInput.value) {
+            this.clearList();
+            this.removeBtn();
 
-        this.clearList();
-        this.removeBtn();
-
-        apiService.changeWord(this.searchInput.value);
-        const arrImg = await apiService.getPicture();
-        this.renderImg(arrImg);
+            apiService.changeWord(this.searchInput.value);
+            const arrImg = await apiService.getPicture();
+            this.renderImg(arrImg);
+        }
     };
 
     renderImg = arrImg => {
