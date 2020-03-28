@@ -1,9 +1,11 @@
 'use strict';
-import apiService from '../js/apiService.js';
+import ApiService from '../js/apiService.js';
 import templatesCard from '../templates/templat-item-cards.hbs';
 import templatSearchForm from '../templates/templat-search-form.hbs';
 import templatGalleryList from '../templates/templat-gallery-list.hbs';
 import templatBtn from '../templates/templat-btn.hbs';
+
+const apiService = new ApiService();
 
 class SearchImages {
     constructor() {
@@ -13,47 +15,58 @@ class SearchImages {
         this.btn = null;
     }
 
-    start = () => {
+    start = (formClass, inputClass, galleryClass) => {
         this.addToScreen(this.container, 'beforeend', templatSearchForm());
         this.addToScreen(this.container, 'beforeend', templatGalleryList());
+        this.getDOMElement(formClass, inputClass, galleryClass);
 
-        this.searchForm = document.querySelector('#search-form');
-        this.searchInput = document.querySelector('.search-input');
-        this.galleryList = document.querySelector('.gallery');
+        this.searchForm.addEventListener('submit', this.galleryRequest);
+    };
 
-        this.searchForm.addEventListener('submit', this.searchImg);
+    getDOMElement = (formClass, inputClass, galleryClass) => {
+        this.searchForm = document.querySelector(`.${formClass}`);
+        this.searchInput = document.querySelector(`.${inputClass}`);
+        this.galleryList = document.querySelector(`.${galleryClass}`);
     };
 
     addToScreen = (container, position, el) => {
         container.insertAdjacentHTML(position, el);
     };
 
-    searchImg = e => {
+    galleryRequest = async e => {
         e.preventDefault();
+
         this.clearList();
         this.removeBtn();
 
         apiService.changeWord(this.searchInput.value);
-        apiService.getPicture();
-        this.renderImg();
+        const arrImg = await apiService.getPicture();
+        this.renderImg(arrImg);
     };
 
-    renderImg = async() => {
+    renderImg = arrImg => {
         this.length = this.galleryList.clientHeight;
-        const arrImg = await apiService.getPicture();
-        const render = this.renderMarkup(arrImg);
+        this.renderMarkup(arrImg);
 
         if (arrImg.length) {
             this.addToScreen(this.container, 'beforeend', templatBtn());
             this.btn = document.querySelector('.load-btn');
             this.btn.addEventListener('click', this.loadMoreBtn);
         }
-        return render;
+    };
+    loadMoreBtn = async() => {
+        this.removeBtn();
+        apiService.nextPage();
+
+        const arrImg = await apiService.getPicture();
+        this.renderImg(arrImg);
+
+        this.scroll();
     };
 
     scroll = () => {
         window.scrollTo({
-            top: this.length,
+            top: this.length - 90,
             behavior: 'smooth',
         });
     };
@@ -61,13 +74,6 @@ class SearchImages {
     renderMarkup = items => {
         const markup = items.reduce((acc, el) => templatesCard(el) + acc, '');
         this.addToScreen(this.galleryList, 'beforeend', markup);
-    };
-
-    loadMoreBtn = async() => {
-        this.removeBtn();
-        apiService.nextPage();
-        const nextRender = await this.renderImg();
-        this.scroll();
     };
 
     removeBtn = () => {
@@ -81,4 +87,4 @@ class SearchImages {
     };
 }
 
-new SearchImages().start();
+new SearchImages().start('search-form', 'search-input', 'gallery');
