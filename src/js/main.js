@@ -56,12 +56,10 @@ class SearchImagesPlugin {
         }
     };
     loadMoreBtn = async() => {
-        this.removeBtn();
         apiService.nextPage();
-
         const arrImg = await apiService.getPicture();
+        this.removeBtn();
         this.renderImg(arrImg);
-
         this.scroll();
     };
 
